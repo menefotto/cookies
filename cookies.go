@@ -25,16 +25,24 @@ type CookieMng interface {
 
 type Cookies struct {
 	secure *securecookie.SecureCookie
+	conf   *Conf
 	name   string
 }
 
-func New(name string) *Cookies {
+type Conf struct {
+	HttpOnly bool
+	Secure   bool
+	MaxAge   int
+}
+
+func New(name string, conf *Conf) *Cookies {
 	return &Cookies{
 		securecookie.New(
 			securecookie.GenerateRandomKey(64),
 			securecookie.GenerateRandomKey(32),
 		),
 		name,
+		conf,
 	}
 }
 
