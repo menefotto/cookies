@@ -17,10 +17,12 @@ import (
 	"github.com/gorilla/securecookie"
 )
 
-type CookieMng interface {
-	SetCookieVal(w http.ResponseWriter, r *http.Request, val map[string]string)
-	GetCookieVal(w http.ResponseWriter, r *http.Request) map[string]string
-	DelCookie(w http.ResponseWriter, r *http.Request)
+// CookieIface is the interface to be implemented in case other backends implementation
+// are added in future right one is only one.
+type CookieIface interface {
+	Set(w http.ResponseWriter, r *http.Request, val map[string]interface{})
+	Get(w http.ResponseWriter, r *http.Request) map[string]interface{}
+	Del(w http.ResponseWriter, r *http.Request)
 }
 
 type Cookies struct {
@@ -29,28 +31,33 @@ type Cookies struct {
 	name   string
 }
 
+// Conf is the struct the manages the settings for the cookie creation, must be passed
+// to the constructor.
 type Conf struct {
 	HttpOnly bool
 	Secure   bool
 	MaxAge   int
 }
 
+// New accept a cookie name and a configuration and returns a valid cookie manager.
 func New(name string, conf *Conf) *Cookies {
 	return &Cookies{
 		securecookie.New(
 			securecookie.GenerateRandomKey(64),
 			securecookie.GenerateRandomKey(32),
 		),
-		name,
 		conf,
+		name,
 	}
 }
 
-func (c *Cookies) SetCookieVal(w http.ResponseWriter, r *http.Request, val map[string]string) {
+// Set set the cookie with map of values map[string]string
+func (c *Cookies) Set(w http.ResponseWriter, r *http.Request, val map[string]string) {
 	c.setCookie(w, r, val, false, false, 0, time.Now().Add(168*time.Hour))
 }
 
-func (c *Cookies) GetCookieVal(w http.ResponseWriter, r *http.Request) map[string]string {
+// Get gets the map from the request
+func (c *Cookies) Get(w http.ResponseWriter, r *http.Request) map[string]string {
 	value := make(map[string]string)
 
 	if cookie, err := r.Cookie(c.name); err == nil {
@@ -63,7 +70,8 @@ func (c *Cookies) GetCookieVal(w http.ResponseWriter, r *http.Request) map[strin
 	return value
 }
 
-func (c *Cookies) DelCookie(w http.ResponseWriter, r *http.Request) {
+// Del clears the cookie from the client
+func (c *Cookies) Del(w http.ResponseWriter, r *http.Request) {
 	c.setCookie(w, r, nil, false, false, -1, time.Now().Add(168*time.Hour))
 }
 

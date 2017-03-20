@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var cookieMng = New("user")
+var cookieMng = New("user", &Conf{})
 
 func TestCookieGetSet(t *testing.T) {
 	var (
@@ -14,11 +14,11 @@ func TestCookieGetSet(t *testing.T) {
 		m = map[string]string{"username": "wind85"}
 	)
 
-	cookieMng.SetCookieVal(w, nil, m)
+	cookieMng.Set(w, nil, m)
 
 	r := &http.Request{Header: http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}}
 
-	vals := cookieMng.GetCookieVal(w, r)
+	vals := cookieMng.Get(w, r)
 	if vals["username"] != m["username"] {
 		t.Fatal("Something went wrong\n")
 	} else {
@@ -33,7 +33,7 @@ func TestDelCookie(t *testing.T) {
 		m = map[string]string{"username": "wind85"}
 	)
 
-	cookieMng.SetCookieVal(w, nil, m)
-	cookieMng.DelCookie(w, nil)
+	cookieMng.Set(w, nil, m)
+	cookieMng.Del(w, nil)
 
 }
